@@ -47,16 +47,22 @@ Dcheck_subset<-function(strata, prob,sampsize, withreplacement){
     rval<-matrix(0, n,n)
     #sampsize<-ave(strata,strata,FUN=length)
     strats<-unique(strata)
-    if (!withreplacement){
-      for(strat in strats){
+    for(strat in strats){
         these <- strata == strat
         ithese<-which(these)
-        rval[these,these]<- -(1-prob[ithese])/(sampsize[ithese]-1)
-      }
+        if (!withreplacement){
+          rval[these,these]<- -(1-prob[ithese])/(sampsize[ithese]-1)
+        } else {
+          rval[these,these]<- -1/(sampsize[ithese]-1)
+        }
     }
-    diag(rval)<-(1-prob)
+    if (!withreplacement) {
+      diag(rval)<-(1-prob)
+    } else {
+      diag(rval)<-1
+    }
     rval
-}
+    }
 
 
 oldDcheck_subset<-function(strata, subset, prob, withreplacement){
@@ -100,8 +106,6 @@ Dcheck_multi_subset<-function(id,strata,subset,probs,withreplacement){
    nstage<-NCOL(id)
    n<-sum(subset)
    rval<-matrix(0,n,n)
-   if (all(probs==1) && withreplacement)
-       return(as(diag(n),"sparseMatrix"))
    sampsize<-NULL
    for(stage in 1:nstage){
        uid<-rep(FALSE,NROW(id))
@@ -113,7 +117,7 @@ Dcheck_multi_subset<-function(id,strata,subset,probs,withreplacement){
        rval<- twophaseDcheck(rval, this_stage)
      }
    rval
- }
+}
 
 twophaseDcheck<-function(Dcheck1,Dcheck2){
   as(-Dcheck1*Dcheck2+Dcheck1+Dcheck2,"sparseMatrix")
