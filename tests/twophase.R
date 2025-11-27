@@ -131,3 +131,19 @@ all.equal(Vphase2,drop(attr(vcov(tot2),"phases")$phase2))
 Vphase1/attr(vcov(tot),"phases")$phase1
 all.equal(Vphase1,as.vector(attr(vcov(tot2),"phases")$phase1))
 
+## check for special case when first phase is unweighted and with replacement
+  twophase_svy <- twophase(
+    data   = data.frame(
+      STRATUM = c(1, 1, 2, 2),
+      PSU     = c(1, 2, 3, 4),
+      PHASE_2 = c(T, F, T, T),
+      y       = c(10, 12, 9, 13)
+    ),
+    strata = list(~STRATUM, NULL),
+    id     = list(~ PSU, ~ PSU),
+    subset = ~ PHASE_2,
+    method = "full"
+  )
+
+  vcov_y <- svytotal(x = ~ y, design = twophase_svy) |> vcov() |> as.numeric()
+  all.equal(4.44, round(vcov_y, 2))

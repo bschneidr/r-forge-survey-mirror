@@ -100,8 +100,11 @@ Dcheck_multi_subset<-function(id,strata,subset,probs,withreplacement){
    nstage<-NCOL(id)
    n<-sum(subset)
    rval<-matrix(0,n,n)
-   if (all(probs==1) && withreplacement)
-       return(as(diag(n),"sparseMatrix"))
+   if (all(probs==1) && withreplacement) {
+     probs <- probs - 1
+     withreplacement <- FALSE
+     nstage <- 1L
+   }
    sampsize<-NULL
    for(stage in 1:nstage){
        uid<-rep(FALSE,NROW(id))
@@ -113,7 +116,7 @@ Dcheck_multi_subset<-function(id,strata,subset,probs,withreplacement){
        rval<- twophaseDcheck(rval, this_stage)
      }
    rval
- }
+   }
 
 twophaseDcheck<-function(Dcheck1,Dcheck2){
   as(-Dcheck1*Dcheck2+Dcheck1+Dcheck2,"sparseMatrix")
